@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 
 namespace PoshTasks.Cmdlets
 {
-    public abstract class TaskCmdlet<TIn, TOut> : Cmdlet where TIn : class
+    public abstract class TaskCmdlet<TIn, TOut> : Cmdlet
+        where TIn : class
         where TOut : class
     {
         #region Parameters
 
         [Parameter(ValueFromPipeline = true)]
-        public TIn[] InputObject { get; set; }
+        public virtual TIn[] InputObject { get; set; }
 
         #endregion
 
@@ -92,6 +93,9 @@ namespace PoshTasks.Cmdlets
         /// </summary>
         /// <param name="tasks">The collection of <see cref="Task{TOut}"/></param>
         /// <returns>An array of task tasks</returns>
+        /// <remarks>
+        /// Heavily borrowed from: https://blogs.msdn.microsoft.com/pfxteam/2012/08/02/processing-tasks-as-they-complete.
+        /// </remarks>
         protected Task<Task<TOut>>[] Interleaved(IEnumerable<Task<TOut>> tasks)
         {
             TaskCompletionSource<Task<TOut>>[] buckets = new TaskCompletionSource<Task<TOut>>[tasks.Count()];
