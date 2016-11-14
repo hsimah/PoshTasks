@@ -13,7 +13,7 @@ namespace PoshTasks.Cmdlets
     {
         #region Parameters
 
-        [Parameter(ValueFromPipeline = true)]
+        [Parameter(ValueFromPipeline = true, ParameterSetName = "InputObject")]
         public virtual TIn[] InputObject { get; set; }
 
         #endregion
