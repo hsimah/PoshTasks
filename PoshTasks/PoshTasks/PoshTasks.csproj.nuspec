@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>hsimah</authors>
+    <owners>hsimah</owners>
+    <licenseUrl>https://github.com/hsimah/PoshTasks/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/hsimah/PoshTasks</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Provides a Task-based parallel processing base class for binary Cmdlets.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>PowerShell</tags>
+  </metadata>
+  <files>
+    <file src="readme.txt" target="" />
+    <file src="bin\Release\PoshTasks.dll" target="lib\net45\PoshTasks.dll" />
+  </files>
+</package>
