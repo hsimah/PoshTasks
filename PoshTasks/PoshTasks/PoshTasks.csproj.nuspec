@@ -9,7 +9,7 @@
     <projectUrl>https://github.com/hsimah/PoshTasks</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Provides a Task-based parallel processing base class for binary Cmdlets.</description>
-    <releaseNotes></releaseNotes>
+    <releaseNotes>Hotfix to repair a Wait() call outside of try/catch.</releaseNotes>
     <copyright>Copyright 2016</copyright>
     <tags>PowerShell</tags>
   </metadata>
