@@ -28,12 +28,9 @@ namespace PoshTasks.Sample
         /// <returns>A collection of <see cref="ServiceController"/>s from the remote machine</returns>
         protected override ServiceController[] ProcessTask(string server)
         {
-            ServiceController[] services = ServiceController.GetServices(server);
+            var services = string.IsNullOrEmpty(server) ? ServiceController.GetServices() : ServiceController.GetServices(server);
 
-            if (Name != null)
-                return services.Where(s => Name.Contains(s.DisplayName)).ToArray();
-
-            return services;
+            return services.Where(s => Name == null || Name.Contains(s.DisplayName)).ToArray();
         }
 
         /// <summary>
@@ -42,9 +39,9 @@ namespace PoshTasks.Sample
         /// <param name="result">The collection of remote services</param>
         protected override void PostProcessTask(ServiceController[] result)
         {
-            List<dynamic> services = new List<dynamic>();
+            var services = new List<dynamic>();
 
-            foreach (ServiceController service in result)
+            foreach (var service in result)
                 services.Add(new
                 {
                     Name = service.DisplayName,

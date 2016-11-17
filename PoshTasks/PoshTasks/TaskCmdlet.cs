@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace PoshTasks.Cmdlets
@@ -11,14 +10,8 @@ namespace PoshTasks.Cmdlets
         where TIn : class
         where TOut : class
     {
-        #region Parameters
-
         [Parameter(ValueFromPipeline = true, ParameterSetName = "InputObject")]
         public virtual TIn[] InputObject { get; set; }
-
-        #endregion
-
-        #region Abstract methods
 
         /// <summary>
         /// Performs an action on <paramref name="server"/>
@@ -27,25 +20,32 @@ namespace PoshTasks.Cmdlets
         /// <returns>A <see cref="T"/></returns>
         protected abstract TOut ProcessTask(TIn input = null);
 
-        #endregion
-
-        #region Virtual methods
-
         /// <summary>
-        /// Generates a collection of tasks to be processed
+        /// Creates a collection of tasks to be processed
         /// </summary>
         /// <returns>A collection of tasks</returns>
+        [Obsolete]
         protected virtual IEnumerable<Task<TOut>> GenerateTasks()
         {
-            List<Task<TOut>> tasks = new List<Task<TOut>>();
+            return CreateProcessTasks();
+        }
 
-            if (InputObject != null)
-                foreach (TIn input in InputObject)
-                    tasks.Add(Task.Run(() => ProcessTask(input)));
-            else
-                tasks.Add(Task.Run(() => ProcessTask()));
+        /// <summary>
+        /// Creates a collection of tasks to be processed
+        /// </summary>
+        /// <returns>A collection of tasks</returns>
+        protected virtual IEnumerable<Task<TOut>> CreateProcessTasks()
+        {
+            if (InputObject == null)
+            {
+                yield return Task.Run(() => ProcessTask());
+                yield break;
+            }
 
-            return tasks;
+            foreach (var input in InputObject)
+            {
+                yield return Task.Run(() => ProcessTask(input));
+            }
         }
 
         /// <summary>
@@ -57,24 +57,21 @@ namespace PoshTasks.Cmdlets
             WriteObject(result, true);
         }
 
-        #endregion
-
-        #region Processing
-
         /// <summary>
         /// Processes cmdlet operation
         /// </summary>
         protected override void ProcessRecord()
         {
-            IEnumerable<Task<TOut>> tasks = GenerateTasks();
-            
-            foreach (Task<Task<TOut>> bucket in Interleaved(tasks))
+            var tasks = CreateProcessTasks();
+
+            var results = Task.WhenAll(tasks.ToArray());
+
+            results.Wait();
+
+            foreach (var result in results.Result)
             {
                 try
                 {
-                    Task<TOut> task = bucket.Result;
-                    TOut result = task.Result;
-
                     PostProcessTask(result);
                 }
                 catch (Exception e) when (e is PipelineStoppedException || e is PipelineClosedException)
@@ -87,41 +84,5 @@ namespace PoshTasks.Cmdlets
                 }
             }
         }
-
-        /// <summary>
-        /// Interleaves the tasks
-        /// </summary>
-        /// <param name="tasks">The collection of <see cref="Task{TOut}"/></param>
-        /// <returns>An array of task tasks</returns>
-        /// <remarks>
-        /// Heavily borrowed from: https://blogs.msdn.microsoft.com/pfxteam/2012/08/02/processing-tasks-as-they-complete.
-        /// </remarks>
-        protected Task<Task<TOut>>[] Interleaved(IEnumerable<Task<TOut>> tasks)
-        {
-            TaskCompletionSource<Task<TOut>>[] buckets = new TaskCompletionSource<Task<TOut>>[tasks.Count()];
-            Task<Task<TOut>>[] results = new Task<Task<TOut>>[buckets.Length];
-
-            for (int i = 0; i < buckets.Length; i++)
-            {
-                buckets[i] = new TaskCompletionSource<Task<TOut>>();
-                results[i] = buckets[i].Task;
-            }
-
-            int nextTaskIndex = -1;
-
-            foreach (Task<TOut> task in tasks)
-                task.ContinueWith(completed =>
-                {
-                    TaskCompletionSource<Task<TOut>> bucket = buckets[Interlocked.Increment(ref nextTaskIndex)];
-                    bucket.TrySetResult(completed);
-                },
-                CancellationToken.None,
-                TaskContinuationOptions.None,
-                TaskScheduler.Default);
-
-            return results;
-        }
-
-        #endregion
     }
 }
