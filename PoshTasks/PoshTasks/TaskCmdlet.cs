@@ -62,26 +62,32 @@ namespace PoshTasks.Cmdlets
         /// </summary>
         protected override void ProcessRecord()
         {
-            var tasks = CreateProcessTasks();
-
-            var results = Task.WhenAll(tasks.ToArray());
-
-            results.Wait();
-
-            foreach (var result in results.Result)
+            try
             {
-                try
+                var tasks = CreateProcessTasks();
+                var results = Task.WhenAll(tasks);
+
+                results.Wait();
+
+                foreach (var result in results.Result)
                 {
                     PostProcessTask(result);
                 }
-                catch (Exception e) when (e is PipelineStoppedException || e is PipelineClosedException)
-                {
-                    // do nothing if pipeline stops
-                }
-                catch (Exception e)
+            }
+            catch (Exception e) when (e is PipelineStoppedException || e is PipelineClosedException)
+            {
+                // do nothing if pipeline stops
+            }
+            catch (AggregateException ae)
+            {
+                foreach (var e in ae.Flatten().InnerExceptions)
                 {
                     WriteError(new ErrorRecord(e, e.GetType().Name, ErrorCategory.NotSpecified, this));
                 }
+            }
+            catch (Exception e)
+            {
+                WriteError(new ErrorRecord(e, e.GetType().Name, ErrorCategory.NotSpecified, this));
             }
         }
     }
