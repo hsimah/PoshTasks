@@ -9,7 +9,7 @@
     <projectUrl>https://github.com/hsimah/PoshTasks</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Provides a Task-based parallel processing base class for binary Cmdlets.</description>
-    <releaseNotes>Initial release.</releaseNotes>
+    <releaseNotes></releaseNotes>
     <copyright>Copyright 2016</copyright>
     <tags>PowerShell</tags>
   </metadata>
