@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
 using System.Threading.Tasks;
 
@@ -10,6 +9,32 @@ namespace PoshTasks.Cmdlets
         where TIn : class
         where TOut : class
     {
+        private bool writeErrors = true;
+
+        /// <summary>
+        /// Gets or sets the error collection
+        /// </summary>
+        protected List<ErrorRecord> Errors { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the flag whether to write errors
+        /// </summary>
+        protected virtual bool WriteErrors
+        {
+            get
+            {
+                return writeErrors;
+            }
+
+            set
+            {
+                writeErrors = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the input object collection
+        /// </summary>
         [Parameter(ValueFromPipeline = true, ParameterSetName = "InputObject")]
         public virtual TIn[] InputObject { get; set; }
 
@@ -19,6 +44,14 @@ namespace PoshTasks.Cmdlets
         /// <param name="input">The <see cref="object"/> to be processed; null if not processing input</param>
         /// <returns>A <see cref="T"/></returns>
         protected abstract TOut ProcessTask(TIn input = null);
+
+        /// <summary>
+        /// Initialises a new instance of the TaskCmdlet class
+        /// </summary>
+        public TaskCmdlet()
+        {
+            Errors = new List<ErrorRecord>();
+        }
 
         /// <summary>
         /// Creates a collection of tasks to be processed
@@ -69,9 +102,19 @@ namespace PoshTasks.Cmdlets
 
                 results.Wait();
 
+                // Write results
                 foreach (var result in results.Result)
                 {
                     PostProcessTask(result);
+                }
+
+                if (WriteErrors)
+                {
+                    // Write errors
+                    foreach (var error in Errors)
+                    {
+                        WriteError(error);
+                    }
                 }
             }
             catch (Exception e) when (e is PipelineStoppedException || e is PipelineClosedException)

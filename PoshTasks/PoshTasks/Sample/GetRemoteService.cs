@@ -1,14 +1,31 @@
-﻿using PoshTasks.Cmdlets;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Management.Automation;
 using System.ServiceProcess;
+using PoshTasks.Cmdlets;
 
 namespace PoshTasks.Sample
 {
     [Cmdlet(VerbsCommon.Get, "RemoteService")]
     public class GetRemoteService : TaskCmdlet<string, ServiceController[]>
     {
+        private bool writeErrors = false;
+
+        /// <summary>
+        /// Gets or sets the flag whether to write errors
+        /// </summary>
+        protected override bool WriteErrors
+        {
+            get
+            {
+                return writeErrors;
+            }
+
+            set
+            {
+                writeErrors = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the collection of requested service names
         /// </summary>
