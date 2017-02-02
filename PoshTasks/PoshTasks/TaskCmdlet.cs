@@ -9,8 +9,6 @@ namespace PoshTasks.Cmdlets
         where TIn : class
         where TOut : class
     {
-        private bool writeErrors = true;
-
         /// <summary>
         /// Gets or sets the error collection
         /// </summary>
@@ -19,18 +17,7 @@ namespace PoshTasks.Cmdlets
         /// <summary>
         /// Gets or sets the flag whether to write errors
         /// </summary>
-        protected virtual bool WriteErrors
-        {
-            get
-            {
-                return writeErrors;
-            }
-
-            set
-            {
-                writeErrors = value;
-            }
-        }
+        protected virtual bool WriteErrors { get; private set; }
 
         /// <summary>
         /// Gets or sets the input object collection
@@ -51,6 +38,7 @@ namespace PoshTasks.Cmdlets
         public TaskCmdlet()
         {
             Errors = new List<ErrorRecord>();
+            WriteErrors = true;
         }
 
         /// <summary>

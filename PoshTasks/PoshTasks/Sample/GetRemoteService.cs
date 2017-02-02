@@ -19,11 +19,6 @@ namespace PoshTasks.Sample
             {
                 return writeErrors;
             }
-
-            set
-            {
-                writeErrors = value;
-            }
         }
 
         /// <summary>
